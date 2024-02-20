@@ -5,12 +5,10 @@ import java.io.InputStreamReader;
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
-    static String[] rome = new String[] {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
+    static String[] rome = new String[]{"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
 
     public static void main(String[] args) {
-
-        String input = null;
-
+        String input;
         System.out.println("Введите пример (в одну строку например: '1+2' ) " +
                 "используя (только целые) числа от 1 до 10, только арабскими или только римскими цифрами ");
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -23,129 +21,90 @@ public class Main {
         System.out.println(input);
     }
 
-    public static String calc(String input){
-        int romeNum = 0;
+    public static String calc(String input) {
+        boolean arOrRome = true;
+        String reg;
         int oneNum = 0;
         int twoNum = 0;
-        if (input.contains("+")) {
-            String[] res = input.split("\\+");
-            if (res.length > 2) {
-                throw new RuntimeException("Ввведите корректный пример");
-            }
-            for (String s : rome) {
-                for (String re : res) {
-                    if (re.equals(s)) {
-                        romeNum++;
-                    }
-                }
-            }
-            if (romeNum > 0 && romeNum < 3) {
-                oneNum = changeRome(res[0].trim());
-                twoNum = changeRome(res[1].trim());
-            } else {
-                oneNum = Integer.parseInt(res[0].trim());
-                twoNum = Integer.parseInt(res[1].trim());
-            }
-            return String.valueOf(plus(oneNum, twoNum));
-        } else if (input.contains("-")) {
-            String[] res = input.split("-");
-            if (res.length > 2) {
-                throw new RuntimeException("Ввведите корректный пример");
-            }
-            for (String s : rome) {
-                for (String re : res) {
-                    if (re.equals(s)) {
-                        romeNum++;
-                    }
-                }
-            }
-            if (romeNum > 0 && romeNum < 3) {
-                oneNum = changeRome(res[0].trim());
-                twoNum = changeRome(res[1].trim());
-            } else {
-                oneNum = Integer.parseInt(res[0].trim());
-                twoNum = Integer.parseInt(res[1].trim());
-            }
-            return String.valueOf(minus(oneNum, twoNum));
-        } else if (input.contains("/")) {
-            String[] res = input.split("/");
-            if (res.length > 2) {
-                throw new RuntimeException("Ввведите корректный пример");
-            }
-            for (String s : rome) {
-                for (String re : res) {
-                    if (re.equals(s)) {
-                        romeNum++;
-                    }
-                }
-            }
-            if (romeNum > 0 && romeNum < 3) {
-                oneNum = changeRome(res[0].trim());
-                twoNum = changeRome(res[1].trim());
-            } else {
-                oneNum = Integer.parseInt(res[0].trim());
-                twoNum = Integer.parseInt(res[1].trim());
-            }
-            return String.valueOf(div(oneNum, twoNum));
-        } else if (input.contains("*")) {
-            String[] res = input.split("\\*");
-            if (res.length > 2) {
-                throw new RuntimeException("Ввведите корректный пример");
-            }
-            for (String s : rome) {
-                for (String re : res) {
-                    if (re.equals(s)) {
-                        romeNum++;
-                    }
-                }
-            }
-            if (romeNum > 0 && romeNum < 3) {
-                oneNum = changeRome(res[0].trim());
-                twoNum = changeRome(res[1].trim());
-            } else {
-                oneNum = Integer.parseInt(res[0].trim());
-                twoNum = Integer.parseInt(res[1].trim());
-            }
-            return String.valueOf(mult(oneNum, twoNum));
+
+        if (input.contains("+")) reg = "\\+";
+        else if (input.contains("-")) reg = "-";
+        else if (input.contains("/")) reg = "/";
+        else if (input.contains("*")) reg = "\\*";
+        else throw new RuntimeException("Ввведите корректный пример");
+
+        String[] res = input.split(reg);
+        if (res.length > 2) {
+            throw new RuntimeException("Ввведите корректный пример");
         }
-        return "no";
+
+        try {
+            oneNum = Integer.parseInt(res[0].trim());
+            twoNum = Integer.parseInt(res[1].trim());
+        } catch (NumberFormatException e) {
+            arOrRome = false;
+            for (String s : rome) {
+                if (res[0].trim().equals(s)) {
+                    oneNum = changeRome(res[0].trim());
+                    twoNum = changeRome(res[1].trim());
+                    break;
+                }
+            }
+        }
+
+        return sol(reg, arOrRome, oneNum, twoNum);
     }
 
-    private static int changeRome (String num) {
+    private static String sol(String reg, boolean arOrRome, int one, int two) {
+        if (one > 10 || two > 10 || one < 1 || two < 1) {
+            throw new RuntimeException("Введите число от 1 до 10 только арабскими или только римскими цифрами");
+        }
+        if (arOrRome) {
+            switch (reg) {
+                case "\\+":
+                    return String.valueOf(one + two);
+                case "-":
+                    return String.valueOf(one - two);
+                case "/":
+                    return String.valueOf(one / two);
+                case "\\*":
+                    return String.valueOf(one * two);
+            }
+        } else {
+            switch (reg) {
+                case "\\+":
+                    return roman(one + two);
+                case "-":
+                    return roman(one - two);
+                case "/":
+                    return roman(one / two);
+                case "\\*":
+                    return roman(one * two);
+            }
+        }
+        return "Введите число от 1 до 10 только арабскими или только римскими цифрами";
+    }
+
+    private static int changeRome(String num) {
         int romeRes = 0;
-            for (int i = 0; i < 10; i++) {
-                if (num.equals(rome[i])) {
-                    romeRes = i + 1;
-                }
+        for (int i = 0; i < 10; i++) {
+            if (num.equals(rome[i])) {
+                romeRes = i + 1;
             }
-            return romeRes;
+        }
+        return romeRes;
     }
 
-    private static int plus(int one, int two) {
-        if (one > 10 || two > 10 || one < 1 || two < 1) {
-            throw new RuntimeException("Введите число от 1 до 10 только арабскими или только римскими цифрами");
-        }
-        return one + two;
-    }
-
-    private static int minus(int one, int two) {
-        if (one > 10 || two > 10 || one < 1 || two < 1) {
-            throw new RuntimeException("Введите число от 1 до 10 только арабскими или только римскими цифрами");
-        }
-        return one - two;
-    }
-
-    private static int div(int one, int two) {
-        if (one > 10 || two > 10 || one < 1 || two < 1) {
-            throw new RuntimeException("Введите число от 1 до 10 только арабскими или только римскими цифрами");
-        }
-        return one / two;
-    }
-
-    private static int mult(int one, int two) {
-        if (one > 10 || two > 10 || one < 1 || two < 1) {
-            throw new RuntimeException("Введите число от 1 до 10 только арабскими или только римскими цифрами");
-        }
-        return one * two;
+    private static String roman(int num) {
+        if (num < 1)
+            throw new RuntimeException("Результатом работы калькулятора с римскими числами могут быть только положительные числа");
+        String[][] roman = new String[3][10];
+        roman[0] = new String[]{"", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"};
+        roman[1] = new String[]{"", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"};
+        roman[2] = new String[]{"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IV"};
+        String hand = roman[0][num / 100 % 10];
+        String ten = roman[1][num / 10 % 10];
+        String dig = roman[2][num % 10];
+        return hand + ten + dig;
     }
 }
